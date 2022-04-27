@@ -1,0 +1,13 @@
+rule cpp
+    command = g++ -fPIC -c $in -o $out -std=c++20 -I./include/
+
+rule link
+    command = g++ -fPIC -shared -o $out $in
+
+build ./server.o: cpp ./pine/server.cpp
+build ./sockets.o: cpp ./pine/sockets.cpp
+build ./request.o: cpp ./pine/request.cpp
+build ./response.o: cpp ./pine/response.cpp
+build ./headers.o: cpp ./pine/headers.cpp
+build ./libpine.so: link ./server.o ./sockets.o ./request.o ./response.o ./headers.o
+default ./libpine.so

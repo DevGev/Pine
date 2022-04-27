@@ -1,0 +1,9 @@
+rule cpp
+    command = g++ -c $in -o $out -std=c++20 -lpine
+
+rule link
+    command = g++ $in -o $out -lpine
+
+build ./main.o: cpp ./main.cpp
+build ./example: link ./main.o
+default ./example
