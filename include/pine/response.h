@@ -22,7 +22,7 @@ public:
 
     void set_header(const std::string& key, const std::string& value);
     bool set_response_code(int code);
-    void write_header(int fd);
+    std::string header();
 
     const char* text() { return content; }
     int size() { return content_size; }

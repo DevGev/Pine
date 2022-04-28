@@ -82,20 +82,23 @@ bool pine::response::set_response_code(int code)
     return true;
 }
 
-void pine::response::write_header(int fd)
+std::string pine::response::header()
 {
-    write(fd, response_line.c_str(), response_line.size());
-    write(fd, "\r\n", 2);
+    char raw[HTTP_HEADER_MAX_SIZE];
+    memset(raw, 0, HTTP_HEADER_MAX_SIZE);
+    strcat(raw, response_line.c_str());
+    strcat(raw, "\r\n");
 
     for (size_t i = 0; i < headers.num_entries; i++) {
-        write(fd, headers.entries[i].key, strlen(headers.entries[i].key));
-        write(fd, ": ", 2);
-        write(fd, headers.entries[i].value, strlen(headers.entries[i].value));
-        write(fd, "\r\n", 2);
+        strcat(raw, headers.entries[i].key);
+        strcat(raw, ": ");
+        strcat(raw, headers.entries[i].value);
+        strcat(raw, "\r\n");
     }
 
     std::string size_str = std::to_string(content_size);
-    write(fd, "Content-Length: ", 16);
-    write(fd, size_str.c_str(), size_str.size());
-    write(fd, "\r\n\r\n", 4);
+    strcat(raw, "Content-Length:");
+    strcat(raw, size_str.c_str());
+    strcat(raw, "\r\n\r\n");
+    return raw;
 }

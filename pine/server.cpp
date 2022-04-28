@@ -1,8 +1,8 @@
 #include <pine/server.h>
 #include <pine/sockets.h>
 #include <sys/wait.h>
-#include <string.h>
 #include <arpa/inet.h>
+#include <string.h>
 #include <unistd.h>
 #include <poll.h>
 #include <string>
@@ -24,6 +24,18 @@ void pine::server::route(route_t r)
     routes.push_back(r);
 }
 
+bool pine::server::ssl(const char* cert_file, const char* key_file)
+{
+#ifdef OPENSSL
+    ssl_context = openssl_init_ctx();
+    if (openssl_load_certificates(ssl_context, cert_file, key_file))
+        is_ssl = true;
+    return true;
+#endif
+    is_ssl = false;
+    return is_ssl;
+}
+
 void pine::server::set_static_path(const std::string& path_name)
 {
     static_path = path_name;
@@ -33,21 +45,43 @@ void pine::server::set_static_path(const std::string& path_name)
 
 void pine::server::accept_connections()
 {
-    struct sockaddr_in client;
-    while (is_running) {
-        socklen_t addr_size = sizeof(client);
-        int clientfd = accept(insock, (struct sockaddr*)&client, &addr_size);
-        if (clientfd < 0)
-            perror("accept()");
-        slave_send_response(clientfd);
-        usleep(100);
+    client_t client;
+    socklen_t addr_size = sizeof(client);
+    client.fd = accept(insock, (struct sockaddr*)&client, &addr_size);
+    client.is_ssl = false;
+
+    if (client.fd < 0)
+        perror("accept()");
+
+    if (is_ssl) {
+#ifdef OPENSSL
+        openssl_ssl_connection_t conn { 0, ssl_context };
+        int fd = openssl_accept(conn, client.fd);
+        client.ssl = conn.ssl;
+
+        /* fallback to http if tls fails */
+        if (fd == -1) {
+            SSL_free(client.ssl);
+        } else {
+            client.is_ssl = true;
+            client.fd = fd;
+        }
+#endif
     }
+
+    enable_keepalive(client.fd);
+    slave_send_response(client);
 }
 
-void pine::server::close_client_connection(int clientfd)
+void pine::server::close_client_connection(const client_t& client)
 {
-    shutdown(clientfd, SHUT_RDWR);
-    close(clientfd);
+#ifdef OPENSSL
+    if (client.is_ssl)
+        SSL_free(client.ssl);
+#endif
+
+    shutdown(client.fd, SHUT_RDWR);
+    close(client.fd);
 }
 
 std::string pine::server::route_url_static(std::string url)
@@ -76,11 +110,11 @@ pine::route_t* pine::server::route_url(pine::request* req)
     return {};
 }
 
-bool pine::server::keep_alive_connection(int clientfd)
+bool pine::server::keep_alive_connection(const client_t& client)
 {
     int timeout = 60000;
     struct pollfd fds[1];
-    fds[0].fd = clientfd;
+    fds[0].fd = client.fd;
     fds[0].events = POLLIN;
 
     if (poll(fds, 1, timeout) == 0)
@@ -88,17 +122,16 @@ bool pine::server::keep_alive_connection(int clientfd)
     return true;
 }
 
-void pine::server::send_response(int clientfd)
+void pine::server::send_response(const client_t& client)
 {
     char* data = new char[HTTP_HEADER_MAX_SIZE];
-    int receive_size = recv(clientfd, data, HTTP_HEADER_MAX_SIZE, 0);
+    int receive_size = client_read(client, data, HTTP_HEADER_MAX_SIZE, 0);
     data[HTTP_HEADER_MAX_SIZE] = 0;
 
     /* unexpected socket close or failed recv() */
     if (receive_size <= 0) {
         delete[] data;
-        close(insock);
-        return close_client_connection(clientfd);
+        return close_client_connection(client);
     }
 
     /* parse http header and match url */
@@ -112,8 +145,9 @@ void pine::server::send_response(int clientfd)
 
     auto handler = route_url(req);
     auto write_response = [&]() {
-        res->write_header(clientfd);
-        write(clientfd, res->text(), res->size());
+        std::string header = res->header();
+        client_write(client, header.c_str(), header.size());
+        client_write(client, res->text(), res->size());
     };
 
     if (handler) {
@@ -140,30 +174,50 @@ void pine::server::send_response(int clientfd)
     delete res;
 
     if (keep_alive) {
-        if (keep_alive_connection(clientfd))
-            send_response(clientfd);
+        if (keep_alive_connection(client))
+            send_response(client);
+        return;
     }
 
-    close_client_connection(clientfd);
+    close_client_connection(client);
 }
 
-void pine::server::slave_send_response(int clientfd)
+void pine::server::slave_send_response(client_t& client)
 {
     if (fork() == 0) {
         close(insock);
-        send_response(clientfd);
+        send_response(client);
         exit(0);
     }
 
-    close(clientfd);
+    close(client.fd);
     /* prevent zombie children */
     signal(SIGCHLD, SIG_IGN);
+}
+
+size_t pine::server::client_write(const client_t& client, const char* data, size_t size)
+{
+#ifdef OPENSSL
+    if (client.is_ssl)
+        return openssl_write(client.ssl, data, size);
+#endif
+    return write(client.fd, data, size);
+}
+
+size_t pine::server::client_read(const client_t& client, void* data, size_t size, int flags)
+{
+#ifdef OPENSSL
+    if (client.is_ssl)
+        return openssl_read(client.ssl, data, size);
+#endif
+    return recv(client.fd, data, size, flags);
 }
 
 bool pine::server::run()
 {
     insock = socket_connect(port.c_str());
     is_running = true;
-    accept_connections();
+    while (is_running)
+        accept_connections();
     return true;
 }
