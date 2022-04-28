@@ -6,7 +6,6 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <memory.h>
-#include <stdio.h>
 
 addrinfo* socket_address_info(const char* port)
 {
@@ -19,7 +18,7 @@ addrinfo* socket_address_info(const char* port)
     hints.ai_flags = AI_PASSIVE;
 
     if (getaddrinfo(NULL, port, &hints, &ai) != 0)
-        perror("getaddrinfo()");
+        return NULL;
 
     return ai;
 }
@@ -39,16 +38,12 @@ int socket_bind(addrinfo* ai)
             break;
     }
 
-    if (ai == NULL)
-        perror("socket() or bind()");
-
     return insock;
 }
 
 void socket_listen(int insock)
 {
-    if (listen(insock, SOMAXCONN) != 0)
-        perror("listen()");
+    listen(insock, SOMAXCONN);
 }
 
 int pine::socket_connect(const char* port)

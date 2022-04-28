@@ -8,12 +8,12 @@ void index(pine::request* request, pine::response* response)
 void dynamic_image(pine::request* request, pine::response* response)
 {
     response->set_header("Content-Type", "image/jpg");
-    response->set_content_file(request->args().at(0));
+    response->set_content_file(request->arg(0));
 }
 
 void url_arguments(pine::request* request, pine::response* response)
 {
-    response->set_text("arguments: " + request->args().at(0) + ", " + request->args().at(1));
+    response->set_text("arguments: " + request->arg(0) + ", " + request->arg(1));
 }
 
 void user_agent(pine::request* request, pine::response* response)

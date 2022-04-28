@@ -12,6 +12,11 @@ pine::request::~request()
 {
 }
 
+bool pine::request::match_url(const char* route_url)
+{
+    return pine::match_url(req_url, route_url, url());
+}
+
 std::string pine::request::header(std::string key)
 {
     std::transform(key.begin(), key.end(), key.begin(),
@@ -27,4 +32,11 @@ void pine::request::set_header(const std::string& key, const std::string& value)
 void pine::request::parse_header()
 {
     pine::parse_header(headers, req_raw_header.c_str());
+}
+
+std::string pine::request::arg(uint32_t i)
+{
+    if (i >= 100)
+        return {};
+    return req_url.args[i];
 }

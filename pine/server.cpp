@@ -50,43 +50,6 @@ void pine::server::close_client_connection(int clientfd)
     close(clientfd);
 }
 
-bool match_url(const pine::route_t* route, const std::string& url, pine::request* req)
-{
-    if (url == "/" && route->url != "/")
-        return false;
-
-    size_t n1 = std::count(url.begin(), url.end(), '/');
-    size_t n2 = std::count(route->url.begin(), route->url.end(), '/');
-    if (n1 != n2)
-        return false;
-
-    std::stringstream s1(url);
-    std::stringstream s2(route->url);
-    std::string f1 {};
-    std::string f2 {};
-
-    while (true) {
-        bool c1 = static_cast<bool>(getline(s2, f2, '/'));
-        bool c2 = static_cast<bool>(getline(s1, f1, '/'));
-
-        if (!c1 && !c2)
-            break;
-
-        if (c1 != c2)
-            return false;
-
-        if (f2 == "@") {
-            req->args().push_back(f1);
-            continue;
-        }
-
-        if (f2 != f1)
-            return false;
-    }
-
-    return true;
-}
-
 std::string pine::server::route_url_static(std::string url)
 {
     if (!static_path.size())
@@ -107,10 +70,9 @@ std::string pine::server::route_url_static(std::string url)
 
 pine::route_t* pine::server::route_url(pine::request* req)
 {
-    for (auto& route : routes) {
-        if (match_url(&route, req->url(), req))
+    for (auto& route : routes)
+        if (req->match_url(route.url.c_str()))
             return &route;
-    }
     return {};
 }
 

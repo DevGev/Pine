@@ -9,5 +9,6 @@ build ./sockets.o: cpp ./pine/sockets.cpp
 build ./request.o: cpp ./pine/request.cpp
 build ./response.o: cpp ./pine/response.cpp
 build ./headers.o: cpp ./pine/headers.cpp
-build ./libpine.so: link ./server.o ./sockets.o ./request.o ./response.o ./headers.o
+build ./url.o: cpp ./pine/url.cpp
+build ./libpine.so: link ./server.o ./sockets.o ./request.o ./response.o ./headers.o ./url.o
 default ./libpine.so
