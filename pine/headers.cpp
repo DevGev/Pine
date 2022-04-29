@@ -47,7 +47,7 @@ void pine::parse_header(http_header_t& header, const char* raw_header)
     size_t size = strlen(raw_header);
 
     position = parse_until(raw_header, header.method, ' ', 0, 10, position);
-    position = parse_until(raw_header, header.url, ' ', '?', 512, position);
+    position = parse_until(raw_header, header.url, ' ', '?', 1024, position);
 
     while (raw_header[position] != '\n')
         position++;

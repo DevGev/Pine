@@ -9,7 +9,7 @@ typedef struct http_header_entry {
 } http_header_entry_t;
 
 typedef struct http_header {
-    char url[512];
+    char url[1024];
     char method[10];
     http_header_entry_t entries[100];
     int num_entries { 0 };
