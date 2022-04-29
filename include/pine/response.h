@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#define HTTP_HEADER_MAX_SIZE 65535
+#define HTTP_HEADER_MAX_SIZE 4096
 
 namespace pine {
 class response {
@@ -22,7 +22,7 @@ public:
 
     void set_header(const std::string& key, const std::string& value);
     bool set_response_code(int code);
-    std::string header();
+    void header(char* header, size_t size);
 
     const char* text() { return content; }
     int size() { return content_size; }

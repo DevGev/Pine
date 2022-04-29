@@ -145,8 +145,11 @@ void pine::server::send_response(const client_t& client)
 
     auto handler = route_url(req);
     auto write_response = [&]() {
-        std::string header = res->header();
-        client_write(client, header.c_str(), header.size());
+        char header[HTTP_HEADER_MAX_SIZE];
+        memset(header, 0, HTTP_HEADER_MAX_SIZE);
+        res->header(header, HTTP_HEADER_MAX_SIZE);
+
+        client_write(client, header, strlen(header));
         client_write(client, res->text(), res->size());
     };
 

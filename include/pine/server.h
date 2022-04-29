@@ -8,7 +8,7 @@
 #include <vector>
 #include <memory>
 
-#define HTTP_HEADER_MAX_SIZE 65535
+#define HTTP_HEADER_MAX_SIZE 4096
 
 namespace pine {
 typedef struct route {

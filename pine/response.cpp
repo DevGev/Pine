@@ -82,23 +82,20 @@ bool pine::response::set_response_code(int code)
     return true;
 }
 
-std::string pine::response::header()
+void pine::response::header(char* header, size_t size)
 {
-    char raw[HTTP_HEADER_MAX_SIZE];
-    memset(raw, 0, HTTP_HEADER_MAX_SIZE);
-    strcat(raw, response_line.c_str());
-    strcat(raw, "\r\n");
+    strcat(header, response_line.c_str());
+    strcat(header, "\r\n");
 
     for (size_t i = 0; i < headers.num_entries; i++) {
-        strcat(raw, headers.entries[i].key);
-        strcat(raw, ": ");
-        strcat(raw, headers.entries[i].value);
-        strcat(raw, "\r\n");
+        strcat(header, headers.entries[i].key);
+        strcat(header, ": ");
+        strcat(header, headers.entries[i].value);
+        strcat(header, "\r\n");
     }
 
     std::string size_str = std::to_string(content_size);
-    strcat(raw, "Content-Length:");
-    strcat(raw, size_str.c_str());
-    strcat(raw, "\r\n\r\n");
-    return raw;
+    strcat(header, "Content-Length:");
+    strcat(header, size_str.c_str());
+    strcat(header, "\r\n\r\n");
 }

@@ -14,7 +14,7 @@ public:
     void parse_header();
     bool match_url(const char* route_url);
     std::string arg(uint32_t i);
-    std::string header(std::string key);
+    std::string header(const std::string& key);
     void set_header(const std::string& key, const std::string& value);
 
     const char* method() { return headers.method; }
@@ -22,7 +22,6 @@ public:
 
 private:
     std::string req_raw_header;
-
     url_t req_url;
     http_header_t headers;
 };
