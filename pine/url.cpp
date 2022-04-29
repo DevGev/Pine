@@ -11,9 +11,9 @@ bool pine::match_url(url_t& url, const char* route_url, const char* req_url)
 
     for (size_t i = 0; i < 100; i++)
         memset(url.args[i], 0, 512);
-    memset(url.url, 0, 100);
+    memset(url.url, 0, 512);
 
-    if (req_url_size > 100 || route_url_size > req_url_size)
+    if (req_url_size > 512 || route_url_size > req_url_size)
         return false;
 
     strncpy(url.url, req_url, req_url_size);
