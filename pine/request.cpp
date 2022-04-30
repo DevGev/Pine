@@ -23,12 +23,12 @@ bool pine::request::match_url(const char* route_url)
 std::string pine::request::header(const std::string& key)
 {
     char key_lower[100];
-    memset(key_lower, 0, 100);
     size_t size = key.size();
     if (size > 100)
         return {};
     for (size_t i = 0; i < size; i++)
         key_lower[i] = tolower(key[i]);
+    key_lower[size] = 0;
     return header_value(headers, key_lower);
 }
 

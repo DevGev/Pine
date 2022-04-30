@@ -5,15 +5,12 @@ void pine::set_header_value(http_header_t& header, const char* key, const char* 
 {
     for (size_t i = 0; i < header.num_entries; i++) {
         if (strcmp(header.entries[i].key, key) == 0) {
-            memset(header.entries[i].value, 0, 100);
             strcpy(header.entries[i].value, value);
             return;
         }
     }
 
-    memset(header.entries[header.num_entries].key, 0, 100);
     strcpy(header.entries[header.num_entries].key, key);
-    memset(header.entries[header.num_entries].value, 0, 100);
     strcpy(header.entries[header.num_entries].value, value);
     header.num_entries++;
 }
