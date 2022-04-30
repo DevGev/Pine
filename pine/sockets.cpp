@@ -95,7 +95,7 @@ void socket_listen(int insock)
     listen(insock, SOMAXCONN);
 }
 
-void pine::enable_keepalive(int sock)
+void pine::enable_keep_alive(int sock)
 {
     int yes = 1;
     setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, &yes, sizeof(int));

@@ -17,7 +17,7 @@ namespace pine {
 /* start listening for connections on {port} */
 int socket_connect(const char* port);
 /* setopt for keep-alive connections */
-void enable_keepalive(int sock);
+void enable_keep_alive(int sock);
 
 #ifdef OPENSSL
 SSL_CTX* openssl_init_ctx();

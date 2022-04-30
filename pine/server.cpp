@@ -67,7 +67,6 @@ void pine::server::accept_connections()
 #endif
     }
 
-    enable_keepalive(client.fd);
     slave_send_response(client);
 }
 
@@ -129,15 +128,18 @@ void pine::server::write_response(const client_t& client, response* res)
     client_write(client, res->text(), res->size(), 0);
 }
 
-void pine::server::send_response(const client_t& client)
+bool pine::server::send_response(const client_t& client)
 {
     char data[HTTP_HEADER_MAX_SIZE];
     int receive_size = client_read(client, data, HTTP_HEADER_MAX_SIZE, 0);
-    data[HTTP_HEADER_MAX_SIZE - 1] = 0;
+    int end = (receive_size < HTTP_HEADER_MAX_SIZE) ? receive_size : HTTP_HEADER_MAX_SIZE - 1;
+    data[end] = 0;
 
     /* unexpected socket close or failed recv() */
-    if (receive_size <= 0)
-        return close_client_connection(client);
+    if (receive_size <= 0) {
+        close_client_connection(client);
+        return false;
+    }
 
     request req;
     response res;
@@ -169,20 +171,21 @@ void pine::server::send_response(const client_t& client)
         write_response(client, &res);
     }
 
-    if (keep_alive) {
-        if (keep_alive_connection(client))
-            send_response(client);
-        return;
-    }
-
-    close_client_connection(client);
+    return keep_alive;
 }
 
 void pine::server::slave_send_response(client_t& client)
 {
     if (fork() == 0) {
         close(insock);
-        send_response(client);
+        enable_keep_alive(client.fd);
+
+        while (send_response(client)) {
+            if (!keep_alive_connection(client))
+                break;
+        }
+
+        close_client_connection(client);
         exit(0);
     }
 

@@ -38,7 +38,7 @@ public:
 
 private:
     void accept_connections();
-    void send_response(const client_t& client);
+    bool send_response(const client_t& client);
     void slave_send_response(client_t& client);
     void close_client_connection(const client_t& client);
     bool keep_alive_connection(const client_t& client);

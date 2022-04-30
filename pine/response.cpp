@@ -95,7 +95,7 @@ void pine::response::header(char* header, size_t size)
     }
 
     std::string size_str = std::to_string(content_size);
-    strcat(header, "Content-Length:");
+    strcat(header, "Content-Length: ");
     strcat(header, size_str.c_str());
     strcat(header, "\r\n\r\n");
 }
