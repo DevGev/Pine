@@ -34,7 +34,9 @@ bool pine::response::set_content_file(const std::string& file_name)
     fread(content, sizeof(char), size, file);
     fclose(file);
 
-    set_header("Content-Type", file_extension_to_mime(file_extension(file_name).c_str()));
+    char extension[100];
+    if (file_extension(file_name.c_str(), extension, 100))
+        set_header("Content-Type", file_extension_to_mime(extension));
     return true;
 }
 

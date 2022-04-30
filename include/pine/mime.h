@@ -569,14 +569,21 @@ const char* file_extension_to_mime(const char* extension)
     return "text/plain";
 }
 
-std::string file_extension(const std::string& file_name)
+bool file_extension(const char* file_name, char* extension, size_t max)
 {
-    std::string extension;
-    for (size_t i = file_name.size() - 1; i != 0; i--) {
-        if (file_name[i] == '.')
-            break;
-        extension = file_name[i] + extension;
-    }
-    return extension;
+    size_t size = strlen(file_name);
+    size_t position = size;
+
+    while (file_name[position - 1] != '.' && position != 0)
+        position--;
+
+    size_t length = size - position;
+    if (position == 0 || length >= max)
+        return false;
+
+    for (size_t i = 0; i < length; i++)
+        extension[length - i - 1] = file_name[size - i - 1];
+    extension[length] = 0;
+    return true;
 }
 };
