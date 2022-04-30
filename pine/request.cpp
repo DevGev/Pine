@@ -1,15 +1,18 @@
 #include <pine/request.h>
-#include <sstream>
+#include <unistd.h>
 #include <memory.h>
 
-pine::request::request(const std::string& raw_header)
+pine::request::request()
 {
-    req_raw_header = raw_header;
-    parse_header();
 }
 
 pine::request::~request()
 {
+}
+
+void pine::request::set_headers(const char* raw)
+{
+    parse_header(headers, raw);
 }
 
 bool pine::request::match_url(const char* route_url)
@@ -32,11 +35,6 @@ std::string pine::request::header(const std::string& key)
 void pine::request::set_header(const std::string& key, const std::string& value)
 {
     set_header_value(headers, key.c_str(), value.c_str());
-}
-
-void pine::request::parse_header()
-{
-    pine::parse_header(headers, req_raw_header.c_str());
 }
 
 std::string pine::request::arg(uint32_t i)

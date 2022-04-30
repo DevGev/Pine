@@ -9,14 +9,12 @@ bool pine::match_url(url_t& url, const char* route_url, const char* req_url)
     size_t req_url_pos = 0;
     size_t route_url_pos = 0;
 
-    for (size_t i = 0; i < 100; i++)
-        memset(url.args[i], 0, 1024);
-    memset(url.url, 0, 1024);
-
     if (req_url_size > 1024 || route_url_size > req_url_size)
         return false;
 
-    strncpy(url.url, req_url, req_url_size);
+    memcpy(url.url, req_url, req_url_size);
+    url.url[req_url_size] = 0;
+
     while (true) {
         if (route_url[route_url_pos] == '@') {
             if (req_url_pos >= req_url_size || req_url[req_url_pos] == '/')
@@ -32,6 +30,8 @@ bool pine::match_url(url_t& url, const char* route_url, const char* req_url)
                 req_url_pos++;
                 pos++;
             }
+
+            url.args[argument][pos] = 0;
             argument++;
             route_url_pos++;
         }

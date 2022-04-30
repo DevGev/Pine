@@ -42,12 +42,12 @@ private:
     void slave_send_response(client_t& client);
     void close_client_connection(const client_t& client);
     bool keep_alive_connection(const client_t& client);
+    void write_response(const client_t& client, response* res);
 
     size_t client_read(const client_t& client, void* data, size_t size, int flags);
-    size_t client_write(const client_t& client, const char* data, size_t size);
+    size_t client_write(const client_t& client, const char* data, size_t size, int flags);
 
-    void strip_url(std::string& url);
-    std::string route_url_static(std::string url);
+    std::string route_url_static(const std::string& url);
     route_t* route_url(pine::request* args);
 
     std::vector<route_t> routes;
