@@ -1,4 +1,4 @@
-<p align="center"><img src="https://i.postimg.cc/3RwMsH0H/pine.png" width="300px"></p>
+<p align="center"><img src="https://i.postimg.cc/NFBnqHXd/pine.png" width="260px"></p>
 
 ## Description
 
