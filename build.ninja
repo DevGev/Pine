@@ -10,5 +10,6 @@ build ./request.o: cpp ./pine/request.cpp
 build ./response.o: cpp ./pine/response.cpp
 build ./headers.o: cpp ./pine/headers.cpp
 build ./url.o: cpp ./pine/url.cpp
-build ./libpine.so: link ./server.o ./sockets.o ./request.o ./response.o ./headers.o ./url.o
+build ./mime.o: cpp ./pine/mime.cpp
+build ./libpine.so: link ./server.o ./sockets.o ./request.o ./response.o ./headers.o ./url.o ./mime.o
 default ./libpine.so
